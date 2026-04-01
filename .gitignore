@@ -1,0 +1,7 @@
+.claude/settings.json
+.claude/settings.local.json
+.remember/
+.env
+*.log
+*.pid
+.DS_Store

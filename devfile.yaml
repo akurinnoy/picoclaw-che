@@ -1,0 +1,101 @@
+# PicoClaw Terminal — DevWorkspace with Web Terminal and Web UI
+#
+# PicoClaw is an open-source personal AI assistant (Go, MIT).
+# Repo: https://github.com/sipeed/picoclaw
+#
+# The launcher container provides:
+#   - Web UI (picoclaw-launcher) on port 18800 — configure agents, channels, etc.
+#   - Gateway HTTP server on port 18790 — webhook endpoint for chat channels
+# The ttyd web terminal is injected via .che/che-editor.yaml as a
+# container contribution (following the che-code editor pattern).
+#
+# First boot: open the web UI at the Route URL and run `picoclaw onboard`
+# in the terminal to configure your API key, then restart the workspace.
+
+schemaVersion: 2.3.0
+metadata:
+  name: picoclaw-terminal
+
+attributes:
+  controller.devfile.io/storage-type: per-workspace
+
+components:
+  # Service exposing both the web UI and gateway ports.
+  # DWO applies this as a cluster resource (not a pod container).
+  - name: picoclaw-service
+    kubernetes:
+      deployByDefault: true
+      inlined: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: picoclaw-terminal
+        spec:
+          selector:
+            controller.devfile.io/devworkspace_name: picoclaw-terminal
+          ports:
+            - name: webui
+              port: 18800
+              targetPort: 18800
+            - name: gateway
+              port: 18790
+              targetPort: 18790
+
+  # Route for the picoclaw web UI. Applied on OpenShift only.
+  - name: picoclaw-route
+    openshift:
+      deployByDefault: true
+      inlined: |
+        apiVersion: route.openshift.io/v1
+        kind: Route
+        metadata:
+          name: picoclaw-terminal
+        spec:
+          to:
+            kind: Service
+            name: picoclaw-terminal
+          port:
+            targetPort: webui
+          tls:
+            termination: edge
+            insecureEdgeTerminationPolicy: Redirect
+
+  # PicoClaw launcher container.
+  # Runs the web UI (port 18800) and gateway (port 18790).
+  # The ttyd terminal is injected via .che/che-editor.yaml.
+  # Config and workspace persist in the PVC at /root/.picoclaw.
+  - name: picoclaw
+    container:
+      image: docker.io/sipeed/picoclaw:launcher
+      mountSources: false
+      memoryRequest: 128Mi
+      memoryLimit: 512Mi
+      env:
+        - name: PICOCLAW_GATEWAY_HOST
+          value: "0.0.0.0"
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          /ttyd-vol/ttyd -W sh &
+          exec picoclaw-launcher -public -no-browser
+      endpoints:
+        - name: webui
+          targetPort: 18800
+          exposure: public
+          protocol: https
+          attributes:
+            type: main
+            cookiesAuthEnabled: true
+            discoverable: false
+            urlRewriteSupported: false
+        - name: gateway
+          targetPort: 18790
+          exposure: internal
+          protocol: http
+      volumeMounts:
+        - name: picoclaw-data
+          path: /root/.picoclaw
+
+  - name: picoclaw-data
+    volume:
+      size: 1Gi
