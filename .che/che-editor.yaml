@@ -41,6 +41,15 @@ inline:
         memoryRequest: 32Mi
         cpuLimit: 500m
         cpuRequest: 30m
+        endpoints:
+          - name: ttyd-terminal
+            targetPort: 7681
+            exposure: public
+            protocol: https
+            attributes:
+              cookiesAuthEnabled: true
+              discoverable: false
+              urlRewriteSupported: true
         volumeMounts:
           - name: ttyd-volume
             path: /ttyd-vol
