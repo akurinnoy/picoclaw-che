@@ -84,7 +84,6 @@ components:
           exposure: public
           protocol: https
           attributes:
-            type: main
             cookiesAuthEnabled: true
             discoverable: false
             urlRewriteSupported: false

@@ -47,6 +47,7 @@ inline:
             exposure: public
             protocol: https
             attributes:
+              type: main
               cookiesAuthEnabled: true
               discoverable: false
               urlRewriteSupported: true
