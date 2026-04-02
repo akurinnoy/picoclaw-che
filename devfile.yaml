@@ -63,7 +63,7 @@ components:
   # PicoClaw launcher container.
   # Runs the web UI (port 18800) and gateway (port 18790).
   # The ttyd terminal is injected via .che/che-editor.yaml.
-  # Config and workspace persist in the PVC at /root/.picoclaw.
+  # Config and workspace persist in the PVC at /home/user/.picoclaw.
   - name: picoclaw
     container:
       image: docker.io/sipeed/picoclaw:launcher
@@ -76,6 +76,10 @@ components:
       command: ["/bin/sh", "-c"]
       args:
         - |
+          if ! whoami &>/dev/null; then
+            echo "user:x:$(id -u):0:user:/home/user:/bin/sh" >> /etc/passwd
+          fi
+          export HOME=/home/user
           /ttyd-vol/ttyd -W sh &
           exec picoclaw-launcher -public -no-browser
       endpoints:
@@ -93,7 +97,7 @@ components:
           protocol: http
       volumeMounts:
         - name: picoclaw-data
-          path: /root/.picoclaw
+          path: /home/user/.picoclaw
 
   - name: picoclaw-data
     volume:

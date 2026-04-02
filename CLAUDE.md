@@ -21,7 +21,7 @@ Upstream: https://github.com/sipeed/picoclaw
 
 ## Config
 
-- Config persists in PVC at `/root/.picoclaw/config.json`
+- Config persists in PVC at `/home/user/.picoclaw/config.json`
 - Survives restarts, lost on workspace deletion
 - `PICOCLAW_GATEWAY_HOST=0.0.0.0` is required for the gateway to bind on all interfaces
 - First boot: run `picoclaw onboard` in the terminal, then restart the workspace
