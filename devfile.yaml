@@ -93,8 +93,12 @@ components:
             urlRewriteSupported: false
         - name: gateway
           targetPort: 18790
-          exposure: internal
-          protocol: http
+          exposure: public
+          protocol: https
+          attributes:
+            cookiesAuthEnabled: true
+            discoverable: false
+            urlRewriteSupported: false
       volumeMounts:
         - name: picoclaw-data
           path: /home/user/.picoclaw
