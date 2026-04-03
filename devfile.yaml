@@ -40,8 +40,8 @@ components:
             echo "user:x:$(id -u):0:user:/home/user:/bin/sh" >> /etc/passwd
           fi
           export HOME=/home/user
-          /ttyd-vol/ttyd -W sh &
-          exec picoclaw-launcher -public -no-browser
+          cd /home/user
+          exec /ttyd-vol/ttyd -W sh
       endpoints:
         - name: webui
           targetPort: 18800
@@ -66,3 +66,11 @@ components:
   - name: picoclaw-data
     volume:
       size: 1Gi
+
+commands:
+  - id: start-launcher
+    exec:
+      label: "Start PicoClaw Launcher"
+      component: picoclaw
+      commandLine: picoclaw-launcher -public -no-browser
+      workingDir: /home/user
